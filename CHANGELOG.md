@@ -14,3 +14,6 @@
 ## [1.1.2] 12.08.2025
 - License updated
 - Added myself as author
+
+## [1.1.3] 12.08.2025
+- Fixed voxel testing

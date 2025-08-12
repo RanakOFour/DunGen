@@ -410,6 +410,49 @@ namespace RanaksDunGen
                 }
             }
 
+            // X and Z have to be checked for the same value because rotating
+            while (l_currentFactor.x < l_minValues.x)
+            {
+                bool l_failed = false;
+                foreach (Vector3 l_currentSize in l_partSizes)
+                {
+                    if (l_currentSize.x % l_currentFactor.x != 0 || l_currentSize.z % l_currentFactor.x != 0)
+                    {
+                        l_failed = true;
+                        break;
+                    }
+                }
+
+                if (!l_failed)
+                {
+                    l_dimensionHCF.x = l_currentFactor.x;
+                }
+
+                l_currentFactor.x += 1;
+            }
+
+            l_dimensionHCF.z = l_dimensionHCF.x;
+
+            while (l_currentFactor.y < l_minValues.y)
+            {
+                bool l_failed = false;
+                foreach (Vector3 l_currentSize in l_partSizes)
+                {
+                    if (l_currentSize.y % l_currentFactor.y != 0)
+                    {
+                        l_failed = true;
+                        break;
+                    }
+                }
+
+                if (!l_failed)
+                {
+                    l_dimensionHCF.y = l_currentFactor.y;
+                }
+
+                l_currentFactor.y += 1;
+            }
+
             l_debugMessage += "\nOptimal voxel size: " + l_dimensionHCF;
             Debug.Log(l_debugMessage);
 
