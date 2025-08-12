@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RanaksDunGen
+namespace RanaksDungeonGenerator.Scripts
 {
     [Serializable]
     struct DungeonPartContainer
@@ -52,27 +52,33 @@ namespace RanaksDunGen
         {
             if (m_StartingRoom == null)
             {
-                Debug.Log("Dungeon Generator: no starting room set!");
+                Debug.Log("RanaksDunGen: no starting room set!");
                 return;
             }
 
             if (m_VoxelSize == Vector3.zero)
             {
-                Debug.LogWarning("Dungeon Generator: No voxel size specified!");
+                Debug.LogWarning("RanaksDunGen: No voxel size specified!");
                 return;
             }
 
             if (m_DungeonSize == Vector3.zero)
             {
-                Debug.LogWarning("Dungeon Generator: No dungeon size specified!");
+                Debug.LogWarning("RanaksDunGen: No dungeon size specified!");
+                return;
+            }
+
+            if (!ArePartsValid())
+            {
+                Debug.LogWarning("RanaksDunGen: There are parts without DungeonPart scripts attatched!");
                 return;
             }
 
             // Destroy previously created dungeon right now
-            while (transform.childCount > 0)
-            {
-                GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
-            }
+                while (transform.childCount > 0)
+                {
+                    GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
+                }
 
             Debug.Log("Dungeon Generator: Starting generation");
 
@@ -102,65 +108,65 @@ namespace RanaksDunGen
             FillMap(ref l_instantiatedPiece, ref l_VoxelMap);
 
             // Place down new parts until we run out of parts to place or we run out of connections to put them on
-            while (l_partQueue.Count > 0 && l_dungeonParts.Count > 0)
-            {
-                GameObject l_currentPiece = l_partQueue.Dequeue();
-                ConnectionPoint[] l_connectionPoints = l_currentPiece.GetComponentsInChildren<ConnectionPoint>();
-
-                foreach (ConnectionPoint l_currentPoint in l_connectionPoints)
+                while (l_partQueue.Count > 0 && l_dungeonParts.Count > 0)
                 {
-                    // If we run out of parts midway through the foreach
-                    if (l_dungeonParts.Count == 0) { l_currentPoint.Hide(); break; }
+                    GameObject l_currentPiece = l_partQueue.Dequeue();
+                    ConnectionPoint[] l_connectionPoints = l_currentPiece.GetComponentsInChildren<ConnectionPoint>();
 
-                    // Skip connected points and exit
-                    if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
-
-
-                    bool l_partFits = false;
-                    // Prevent deadlocking
-                    int l_unsuccessfulFits = 0;
-
-                    while (!l_partFits && l_unsuccessfulFits < 6)
+                    foreach (ConnectionPoint l_currentPoint in l_connectionPoints)
                     {
-                        // Cycle through parts randomly until one that can be placed is found
-                        int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
+                        // If we run out of parts midway through the foreach
+                        if (l_dungeonParts.Count == 0) { l_currentPoint.Hide(); break; }
 
-                        GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
-                        ConnectionPoint l_newPoint = l_newPiece.GetComponentInChildren<ConnectionPoint>();
+                        // Skip connected points and exit
+                        if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
 
-                        // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
-                        l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);
-                        l_newPiece.GetComponent<DungeonPart>().ReorientSize();
 
-                        // Accounts for difference in overlapping pieces
-                        Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
-                        l_newPiece.transform.position += l_translate;
+                        bool l_partFits = false;
+                        // Prevent deadlocking
+                        int l_unsuccessfulFits = 0;
 
-                        if (DoesObjectFit(ref l_newPiece, ref l_VoxelMap))
+                        while (!l_partFits && l_unsuccessfulFits < 6)
                         {
-                            l_partFits = true;
-                            FillMap(ref l_newPiece, ref l_VoxelMap);
-                            l_newPoint.Connect();
-                            l_currentPoint.Connect();
-                            l_partQueue.Enqueue(l_newPiece);
+                            // Cycle through parts randomly until one that can be placed is found
+                            int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
 
-                            //Increment number of instances and remove from list if the maximum number if instances is reached
-                            l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab]++;
-                            if (l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab] == l_dungeonParts[l_newPieceIndex].m_MaxIterations)
+                            GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
+                            ConnectionPoint l_newPoint = l_newPiece.GetComponentInChildren<ConnectionPoint>();
+
+                            // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
+                            l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);
+                            l_newPiece.GetComponent<DungeonPart>().ReorientSize();
+
+                            // Accounts for difference in overlapping pieces
+                            Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
+                            l_newPiece.transform.position += l_translate;
+
+                            if (DoesObjectFit(ref l_newPiece, ref l_VoxelMap))
                             {
-                                l_dungeonParts.Remove(l_dungeonParts[l_newPieceIndex]);
+                                l_partFits = true;
+                                FillMap(ref l_newPiece, ref l_VoxelMap);
+                                l_newPoint.Connect();
+                                l_currentPoint.Connect();
+                                l_partQueue.Enqueue(l_newPiece);
+
+                                //Increment number of instances and remove from list if the maximum number if instances is reached
+                                l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab]++;
+                                if (l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab] == l_dungeonParts[l_newPieceIndex].m_MaxIterations)
+                                {
+                                    l_dungeonParts.Remove(l_dungeonParts[l_newPieceIndex]);
+                                }
+                            }
+                            else
+                            {
+                                GameObject.Destroy(l_newPiece);
+                                l_unsuccessfulFits += 1;
                             }
                         }
-                        else
-                        {
-                            GameObject.Destroy(l_newPiece);
-                            l_unsuccessfulFits += 1;
-                        }
-                    }
 
-                    l_currentPoint.Hide();
+                        l_currentPoint.Hide();
+                    }
                 }
-            }
 
             // Clear all remaining conenction points
             if (l_partQueue.Count > 0)
@@ -179,6 +185,27 @@ namespace RanaksDunGen
             }
 
             Debug.Log("Dungeon Generator: Finished!");
+        }
+
+        // See if all prefabs have DungeonParts
+        private bool ArePartsValid()
+        {
+            DungeonPart l_test = m_StartingRoom.GetComponent<DungeonPart>();
+            if (!l_test)
+            {
+                return false;
+            }
+
+            foreach (DungeonPartContainer dpc in m_DungeonParts)
+            {
+                l_test = dpc.m_Prefab.GetComponent<DungeonPart>();
+                if (!l_test)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
         
         /// <summary>
@@ -271,7 +298,7 @@ namespace RanaksDunGen
             DungeonPart l_prefab = _dungeonPart.GetComponent<DungeonPart>();
 
             // Voxel position of prefabs center
-            Vector3 l_shapeCenter = new Vector3(
+                Vector3 l_shapeCenter = new Vector3(
                                            _dungeonPart.transform.position.x / m_VoxelSize.x,
                                            _dungeonPart.transform.position.y / m_VoxelSize.y,
                                            _dungeonPart.transform.position.z / m_VoxelSize.z
