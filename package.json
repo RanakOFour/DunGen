@@ -10,6 +10,9 @@
       "description": "Prefabs and Assets used in tutorial",
       "path": "Samples~/RanaksDunGen"
     }
-  ]
+  ],
+  "author": {
+    "name": "Ranak04"
+  }
 }
 
