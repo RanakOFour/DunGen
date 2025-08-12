@@ -17,3 +17,6 @@
 
 ## [1.1.3] 12.08.2025
 - Fixed voxel testing
+
+## [1.1.4] 12.08.2025
+- Added offset to DungeonPart

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEditor.EditorTools;
 using UnityEngine;
 
 namespace RanaksDunGen
@@ -8,7 +9,11 @@ namespace RanaksDunGen
     {
         [Tooltip("Size in voxels of the part")]
         [SerializeField]
-        public Vector3Int m_Size;
+        public Vector3Int m_Size = Vector3Int.one;
+
+        [Tooltip("Offset of the shape from the center of the prefab")]
+        [SerializeField]
+        public Vector3Int m_Offset = Vector3Int.zero;
 
         private List<Vector3> m_Coordinates;
 
@@ -28,7 +33,7 @@ namespace RanaksDunGen
         public void OnDrawGizmos()
         {
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(transform.position, m_Size);
+            Gizmos.DrawWireCube(transform.position + m_Offset, m_Size);
             Gizmos.color = Color.white;
         }
 
@@ -64,6 +69,7 @@ namespace RanaksDunGen
 
         public List<Vector3> GetCoordinates(Vector3 _center)
         {
+            _center += m_Offset;
             string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
 
             if (m_Dirty)
