@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace RanaksDungeonGenerator.Scripts
+namespace RanaksDunGen
 {
     [Serializable]
     struct DungeonPartContainer
