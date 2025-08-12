@@ -10,3 +10,7 @@
 ## [1.1.1] 12.08.2025
 - Removed 'Voxel Size' option
 - Added ability to determine optimal voxel size
+
+## [1.1.2] 12.08.2025
+- License updated
+- Added myself as author
