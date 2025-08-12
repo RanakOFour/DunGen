@@ -3,6 +3,13 @@
   "version": "1.0.0",
   "displayName": "RanaksDunGen",
   "description": "Dungeon Generator for UnityEngine",
-  "unity": "2022.3"
+  "unity": "2022.3",
+  "samples": [
+    {
+      "displayName": "RanaksDunGen",
+      "description": "Prefabs and Assets used in tutorial",
+      "path": "Samples~/RanaksDunGen"
+    }
+  ]
 }
 
