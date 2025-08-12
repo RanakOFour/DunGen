@@ -6,3 +6,7 @@
 
 ## [1.1.0] 12.08.2025
 - Added outline for DungeonPart.Size
+
+## [1.1.1] 12.08.2025
+- Removed 'Voxel Size' option
+- Added ability to determine optimal voxel size
