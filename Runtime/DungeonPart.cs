@@ -1,0 +1,111 @@
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace RanaksDunGen
+{
+    // Holds static data about the dungeon part
+    public class DungeonPart : MonoBehaviour
+    {
+        [Tooltip("Size in voxels of the part")]
+        [SerializeField]
+        public Vector3Int m_Size;
+
+        private List<Vector3> m_Coordinates;
+
+        private bool m_Dirty;
+
+        public void Awake()
+        {
+            m_Dirty = true;
+        }
+
+        public void Start()
+        {
+            m_Dirty = true;
+        }
+
+        public void ReorientSize()
+        {
+            string l_debugMessage = "Dungeon Generator: Reorienting Shape of Size " + m_Size;
+            
+            Vector3 l_eulers = transform.rotation.eulerAngles;
+
+            l_debugMessage += "\nEulers: " + l_eulers;
+
+            // Leaving this as a vec3 incase other rotations are wanted later
+            Vector3 l_quarterTurns = new Vector3(
+                l_eulers.x / 90.0f,
+                l_eulers.y / 90.0f,
+                l_eulers.z / 90.0f
+            );
+
+            l_debugMessage += "\nQuarter Turns: " + l_quarterTurns;
+
+            // Switch lengths if needed
+            if (Mathf.Round(l_quarterTurns.y) % 2 == 1)
+            {
+                (m_Size.x, m_Size.z) = (m_Size.z, m_Size.x);
+            }
+
+            l_debugMessage += "\nNew Size: " + m_Size;
+
+            //Debug.Log(l_debugMessage);
+
+            m_Dirty = true;
+        }
+
+        public List<Vector3> GetCoordinates(Vector3 _center)
+        {
+            string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
+
+            if (m_Dirty)
+            {
+                m_Coordinates = new List<Vector3>();
+
+                int l_voxelCount = m_Size.x * m_Size.y * m_Size.z;
+
+                Vector3 l_halfSize = (m_Size + Vector3.one) / 2;
+                Vector3Int l_negBound = new Vector3Int(
+                    RoundToZero(_center.x - l_halfSize.x),
+                    RoundToZero(_center.y - l_halfSize.y),
+                    RoundToZero(_center.z - l_halfSize.z)
+                );
+
+                l_debugMessage += "\n Lower Bound: " + l_negBound;
+
+                // Iterate through each coordinate in the discrete grid
+
+                for (int x = 0; x < m_Size.x; x++)
+                    for (int y = 0; y < m_Size.y; y++)
+                        for (int z = 0; z < m_Size.z; z++)
+                        {
+                            Vector3Int localPos = new Vector3Int(x, y, z);
+                            Vector3Int worldPos = l_negBound + localPos;
+
+                            l_debugMessage += "\n" + worldPos;
+                            m_Coordinates.Add(worldPos);
+                        }
+
+
+                if (m_Coordinates.Count != l_voxelCount)
+                {
+                    int l_diff = (int)l_voxelCount - m_Coordinates.Count;
+                    l_debugMessage = "Dungeon Generator: " + gameObject.name + " Failed Coordinate Count by " + l_diff + "\n" + l_debugMessage;
+                    Debug.LogWarning(l_debugMessage);
+                }
+
+                m_Dirty = false;
+            }
+
+            //Debug.Log(l_debugMessage);
+
+            return m_Coordinates;
+        }
+
+        // Rounds numbers down towards zero i.e. 3.5 -> 3.0, -3.5 -> -3.0
+        private int RoundToZero(float value)
+        {
+            return (int)(value < 0 ? Mathf.Floor(value + 0.5f) : Mathf.Ceil(value - 0.5f));
+        }
+    }
+}
