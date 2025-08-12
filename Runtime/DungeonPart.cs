@@ -24,10 +24,18 @@ namespace RanaksDunGen
             m_Dirty = true;
         }
 
+        [ExecuteInEditMode]
+        public void OnDrawGizmos()
+        {
+            Gizmos.color = Color.red;
+            Gizmos.DrawWireCube(transform.position, m_Size);
+            Gizmos.color = Color.white;
+        }
+
         public void ReorientSize()
         {
             string l_debugMessage = "Dungeon Generator: Reorienting Shape of Size " + m_Size;
-            
+
             Vector3 l_eulers = transform.rotation.eulerAngles;
 
             l_debugMessage += "\nEulers: " + l_eulers;
