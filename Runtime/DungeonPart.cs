@@ -62,7 +62,7 @@ namespace RanaksDunGen
 
             l_debugMessage += "\nNew Size: " + m_Size;
 
-            //Debug.Log(l_debugMessage);
+            Debug.Log(l_debugMessage);
 
             m_Dirty = true;
         }
@@ -111,7 +111,7 @@ namespace RanaksDunGen
                 m_Dirty = false;
             }
 
-            //Debug.Log(l_debugMessage);
+            Debug.Log(l_debugMessage);
 
             return m_Coordinates;
         }

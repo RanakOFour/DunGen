@@ -277,19 +277,19 @@ namespace RanaksDunGen
                     l_yCheck ||
                     l_zCheck)
                 {
-                    //Debug.Log("Dungeon Generator: Object does not fit. Error coord: " + l_currentCoord);
+                    Debug.Log("Dungeon Generator: Object does not fit. Error coord: " + l_currentCoord);
                     return false;
                 }
 
-                //Debug.Log("Voxel map check at: " + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2]);
+                Debug.Log("Voxel map check at: " + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2]);
                 if (_VoxelMap.Contains(l_currentCoord))
                 {
-                    //Debug.Log("Dungeon Generator: Object overlaps another. Error coord: " + l_currentCoord);
+                    Debug.Log("Dungeon Generator: Object overlaps another. Error coord: " + l_currentCoord);
                     return false;
                 }
             }
 
-            //Debug.Log("Dungeon Generator: Object fits");
+            Debug.Log("Dungeon Generator: Object fits");
             return true;
         }
 
@@ -315,7 +315,7 @@ namespace RanaksDunGen
                 );
 
                 _VoxelMap.Add(l_currentCoord);
-                //Debug.Log("Dungeon Generator: Position filled: (" + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2] + ")");
+                Debug.Log("Dungeon Generator: Position filled: (" + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2] + ")");
             }
         }
 
