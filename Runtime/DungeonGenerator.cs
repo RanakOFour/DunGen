@@ -33,6 +33,10 @@ namespace RanaksDunGen
         [SerializeField]
         private List<DungeonPartContainer> m_DungeonParts;
 
+        [Tooltip("Set to true to find the optimal voxel size (Could save memory, unstable)")]
+        [SerializeField]
+        private bool m_VoxelSizeCheck = false;
+
         private void Awake()
         {
 
@@ -78,7 +82,10 @@ namespace RanaksDunGen
                 GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
             }
 
-            //DetermineVoxelSize();
+            if (m_VoxelSizeCheck)
+            {
+                DetermineVoxelSize();
+            }
 
             Debug.Log("Dungeon Generator: Starting generation");
 
@@ -461,7 +468,7 @@ namespace RanaksDunGen
             {
                 return;
             }
-            
+
             // Apply change in HCF to all pieces
             foreach (DungeonPartContainer dcp in m_DungeonParts)
             {
@@ -469,6 +476,10 @@ namespace RanaksDunGen
                 l_prefabPart.m_Size.x /= (int)l_dimensionHCF.x;
                 l_prefabPart.m_Size.y /= (int)l_dimensionHCF.y;
                 l_prefabPart.m_Size.z /= (int)l_dimensionHCF.z;
+
+                l_prefabPart.m_Offset.x /= (int)l_dimensionHCF.x;
+                l_prefabPart.m_Offset.y /= (int)l_dimensionHCF.y;
+                l_prefabPart.m_Offset.z /= (int)l_dimensionHCF.z;
             }
 
             m_DungeonSize.x /= (int)l_dimensionHCF.x;
