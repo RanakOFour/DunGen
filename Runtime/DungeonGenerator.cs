@@ -21,6 +21,10 @@ namespace RanaksDunGen
     {
         private Vector3 m_VoxelSize = Vector3.one;
 
+        [Tooltip("Set to true to find the optimal voxel size (Could save memory, unstable)")]
+        [SerializeField]
+        private bool m_VoxelSizeCheck = false;
+
         [Tooltip("Size of the whole dungeon space")]
         [SerializeField]
         private Vector3 m_DungeonSize = Vector3.one;
@@ -32,10 +36,6 @@ namespace RanaksDunGen
         [Tooltip("Unique prefabs that will make up the dungeon")]
         [SerializeField]
         private List<DungeonPartContainer> m_DungeonParts;
-
-        [Tooltip("Set to true to find the optimal voxel size (Could save memory, unstable)")]
-        [SerializeField]
-        private bool m_VoxelSizeCheck = false;
 
         private void Awake()
         {
@@ -82,15 +82,14 @@ namespace RanaksDunGen
                 GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
             }
 
-            if (m_VoxelSizeCheck)
-            {
-                DetermineVoxelSize();
-            }
-
-            Debug.Log("Dungeon Generator: Starting generation");
 
             // Copy m_DungeonParts
             List<DungeonPartContainer> l_dungeonParts = new List<DungeonPartContainer>(m_DungeonParts);
+
+            if (m_VoxelSizeCheck)
+            {
+                DetermineVoxelSize(ref l_dungeonParts);
+            }
 
             // I tried adding an 'm_Iterations' property to DungeonParts but it wouldn't work for some reason when changing the value
             // MAXITERATION FAULT
@@ -106,6 +105,8 @@ namespace RanaksDunGen
 
             // More memory efficient than aformentioned bool[,,]
             List<Vector3> l_VoxelMap = new List<Vector3>();
+
+            Debug.Log("Dungeon Generator: Starting generation");
 
             // New objects created are added to the queue to have new pieces joined to them
             Queue<GameObject> l_partQueue = new Queue<GameObject>();
@@ -356,7 +357,7 @@ namespace RanaksDunGen
         /// <summary>
         /// Determine the most optimal voxel size for the algorithm to save space when keeping the list of used voxels
         /// </summary>
-        public void DetermineVoxelSize()
+        public void DetermineVoxelSize(ref List<DungeonPartContainer> l_dungeonParts)
         {
             // Steps:
             // 1. Determine HCF of each dimension of the DungeonParts
@@ -367,7 +368,7 @@ namespace RanaksDunGen
 
             // Get minimum size values of each dimension
             DungeonPart l_prefabPart;
-            foreach (DungeonPartContainer dcp in m_DungeonParts)
+            foreach (DungeonPartContainer dcp in l_dungeonParts)
             {
                 l_prefabPart = dcp.m_Prefab.GetComponent<DungeonPart>();
                 l_partSizes.Add(l_prefabPart.m_Size);
@@ -470,7 +471,7 @@ namespace RanaksDunGen
             }
 
             // Apply change in HCF to all pieces
-            foreach (DungeonPartContainer dcp in m_DungeonParts)
+            foreach (DungeonPartContainer dcp in l_dungeonParts)
             {
                 l_prefabPart = dcp.m_Prefab.GetComponent<DungeonPart>();
                 l_prefabPart.m_Size.x /= (int)l_dimensionHCF.x;
