@@ -315,7 +315,7 @@ namespace RanaksDunGen
                 );
 
                 _VoxelMap.Add(l_currentCoord);
-                Debug.Log("Dungeon Generator: Position filled: (" + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2] + ")");
+                //Debug.Log("Dungeon Generator: Position filled: (" + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2] + ")");
             }
         }
 
