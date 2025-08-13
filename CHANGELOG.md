@@ -22,4 +22,8 @@
 - Added offset to DungeonPart
 
 ## [1.1.5] 13.08.2025
-- FIxed bug with connectionpoint
+- Fixed bug with connectionpoint
+
+## [1.1.6] 13.08.2025
+- Fixed voxel checks
+- Readded optimal voxel checks
