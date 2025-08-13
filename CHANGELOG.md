@@ -20,3 +20,6 @@
 
 ## [1.1.4] 12.08.2025
 - Added offset to DungeonPart
+
+## [1.1.5] 13.08.2025
+- FIxed bug with connectionpoint

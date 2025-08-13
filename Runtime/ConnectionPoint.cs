@@ -26,11 +26,10 @@ namespace RanaksDunGen
 
         public void Hide()
         {
-            transform.GetChild(0).gameObject.SetActive(false);
-            // MeshRenderer l_renderer = GetComponentInChildren<MeshRenderer>();
-            // MeshCollider l_collider = GetComponentInChildren<MeshCollider>();
-            // l_renderer.enabled = false;
-            // l_collider.enabled = false;
+            if (transform.childCount > 0)
+            {
+                transform.GetChild(0).gameObject.SetActive(false);
+            }
         }
     }
 }
