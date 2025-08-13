@@ -4,18 +4,6 @@ using UnityEngine;
 
 namespace RanaksDunGen
 {
-    [Serializable]
-    struct DungeonPartContainer
-    {
-        [Tooltip("The prefab to be used for this dungeon part")]
-        [SerializeField]
-        public GameObject m_Prefab;
-
-        [Tooltip("How many times this piece can be placed into the dungeon")]
-        [SerializeField]
-        public int m_MaxIterations;
-    }
-
     // Holds static data about the dungeon
     public class DungeonGenerator : MonoBehaviour
     {
@@ -32,6 +20,18 @@ namespace RanaksDunGen
         [Tooltip("The piece that is placed down first in the center of the dungeon")]
         [SerializeField]
         private GameObject m_StartingRoom;
+
+        [Serializable]
+        public struct DungeonPartContainer
+        {
+            [Tooltip("The prefab to be used for this dungeon part")]
+            [SerializeField]
+            public GameObject m_Prefab;
+
+            [Tooltip("How many times this piece can be placed into the dungeon")]
+            [SerializeField]
+            public int m_MaxIterations;
+        }
 
         [Tooltip("Unique prefabs that will make up the dungeon")]
         [SerializeField]
@@ -88,7 +88,20 @@ namespace RanaksDunGen
 
             if (m_VoxelSizeCheck)
             {
-                DetermineVoxelSize(ref l_dungeonParts);
+                Vector3 l_hcf = DetermineVoxelSize();
+
+                DungeonPart l_prefabPart;
+                foreach (DungeonPartContainer dcp in l_dungeonParts)
+                {
+                    l_prefabPart = dcp.m_Prefab.GetComponent<DungeonPart>();
+                    l_prefabPart.m_Size.x /= (int)l_hcf.x;
+                    l_prefabPart.m_Size.y /= (int)l_hcf.y;
+                    l_prefabPart.m_Size.z /= (int)l_hcf.z;
+
+                    l_prefabPart.m_Offset.x /= (int)l_hcf.x;
+                    l_prefabPart.m_Offset.y /= (int)l_hcf.y;
+                    l_prefabPart.m_Offset.z /= (int)l_hcf.z;
+                }
             }
 
             // I tried adding an 'm_Iterations' property to DungeonParts but it wouldn't work for some reason when changing the value
@@ -357,7 +370,7 @@ namespace RanaksDunGen
         /// <summary>
         /// Determine the most optimal voxel size for the algorithm to save space when keeping the list of used voxels
         /// </summary>
-        public void DetermineVoxelSize(ref List<DungeonPartContainer> l_dungeonParts)
+        private Vector3 DetermineVoxelSize()
         {
             // Steps:
             // 1. Determine HCF of each dimension of the DungeonParts
@@ -368,7 +381,7 @@ namespace RanaksDunGen
 
             // Get minimum size values of each dimension
             DungeonPart l_prefabPart;
-            foreach (DungeonPartContainer dcp in l_dungeonParts)
+            foreach (DungeonPartContainer dcp in m_DungeonParts)
             {
                 l_prefabPart = dcp.m_Prefab.GetComponent<DungeonPart>();
                 l_partSizes.Add(l_prefabPart.m_Size);
@@ -464,24 +477,7 @@ namespace RanaksDunGen
             l_debugMessage += "\nOptimal voxel size: " + l_dimensionHCF;
             Debug.Log(l_debugMessage);
 
-            // Quit early if 1
-            if (l_dimensionHCF.magnitude == 1.0f)
-            {
-                return;
-            }
-
-            // Apply change in HCF to all pieces
-            foreach (DungeonPartContainer dcp in l_dungeonParts)
-            {
-                l_prefabPart = dcp.m_Prefab.GetComponent<DungeonPart>();
-                l_prefabPart.m_Size.x /= (int)l_dimensionHCF.x;
-                l_prefabPart.m_Size.y /= (int)l_dimensionHCF.y;
-                l_prefabPart.m_Size.z /= (int)l_dimensionHCF.z;
-
-                l_prefabPart.m_Offset.x /= (int)l_dimensionHCF.x;
-                l_prefabPart.m_Offset.y /= (int)l_dimensionHCF.y;
-                l_prefabPart.m_Offset.z /= (int)l_dimensionHCF.z;
-            }
+            return l_dimensionHCF;
         }
     }
 }
