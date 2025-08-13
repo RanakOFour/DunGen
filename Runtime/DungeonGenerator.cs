@@ -9,9 +9,9 @@ namespace RanaksDunGen
     {
         private Vector3 m_VoxelSize = Vector3.one;
 
-        [Tooltip("Set to true to find the optimal voxel size (Could save memory, unstable)")]
-        [SerializeField]
-        private bool m_VoxelSizeCheck = false;
+        // [Tooltip("Set to true to find the optimal voxel size (Could save memory, unstable)")]
+        // [SerializeField]
+        // private bool m_VoxelSizeCheck = false;
 
         [Tooltip("Size of the whole dungeon space")]
         [SerializeField]
