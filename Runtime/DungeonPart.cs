@@ -69,7 +69,7 @@ namespace RanaksDunGen
 
         public List<Vector3> GetCoordinates(Vector3 _center)
         {
-            _center += m_Offset;
+            //_center += m_Offset;
             string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
 
             if (m_Dirty)
