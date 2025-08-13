@@ -481,10 +481,6 @@ namespace RanaksDunGen
                 l_prefabPart.m_Offset.y /= (int)l_dimensionHCF.y;
                 l_prefabPart.m_Offset.z /= (int)l_dimensionHCF.z;
             }
-
-            m_DungeonSize.x /= (int)l_dimensionHCF.x;
-            m_DungeonSize.y /= (int)l_dimensionHCF.y;
-            m_DungeonSize.z /= (int)l_dimensionHCF.z;
         }
     }
 }

@@ -27,3 +27,7 @@
 ## [1.1.6] 13.08.2025
 - Fixed voxel checks
 - Readded optimal voxel checks
+
+## [1.1.7] 13.08.2025
+- Readded voxel resizing
+- General fixes (I forgot)
