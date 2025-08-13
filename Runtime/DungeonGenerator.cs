@@ -389,7 +389,7 @@ namespace RanaksDunGen
             // Determine HCF of each dimension
             for (int i = 0; i < 3; i++)
             {
-                while (l_currentFactor[i] < l_minValues[i])
+                while (l_currentFactor[i] <= l_minValues[i])
                 {
                     bool l_failed = false;
                     foreach (Vector3 l_currentSize in l_partSizes)
@@ -411,7 +411,7 @@ namespace RanaksDunGen
             }
 
             // X and Z have to be checked for the same value because rotating
-            while (l_currentFactor.x < l_minValues.x)
+            while (l_currentFactor.x <= l_minValues.x && l_currentFactor.z <= l_minValues.x)
             {
                 bool l_failed = false;
                 foreach (Vector3 l_currentSize in l_partSizes)
@@ -433,7 +433,7 @@ namespace RanaksDunGen
 
             l_dimensionHCF.z = l_dimensionHCF.x;
 
-            while (l_currentFactor.y < l_minValues.y)
+            while (l_currentFactor.y <= l_minValues.y)
             {
                 bool l_failed = false;
                 foreach (Vector3 l_currentSize in l_partSizes)
