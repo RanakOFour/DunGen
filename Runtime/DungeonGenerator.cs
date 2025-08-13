@@ -78,7 +78,7 @@ namespace RanaksDunGen
                 GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
             }
 
-            DetermineVoxelSize();
+            //DetermineVoxelSize();
 
             Debug.Log("Dungeon Generator: Starting generation");
 
