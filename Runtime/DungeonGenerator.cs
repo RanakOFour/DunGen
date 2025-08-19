@@ -144,7 +144,7 @@ namespace RanaksDunGen
                     // Skip connected points and exit
                     if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
 
-                    Debug.Log("DunGen: Working on ConnectionPoint ID " + l_currentPoint.m_ID);
+                    //Debug.Log("DunGen: Working on ConnectionPoint ID " + l_currentPoint.m_ID);
 
                     bool l_partFits = false;
                     // Prevent deadlocking
@@ -162,7 +162,7 @@ namespace RanaksDunGen
                         ConnectionPoint[] l_newPiecePoints = l_newPiece.GetComponentsInChildren<ConnectionPoint>();
                         ConnectionPoint l_newPoint = l_newPiecePoints[UnityEngine.Random.Range(0, l_newPiecePoints.Length)];
 
-                        Debug.Log("DunGen: Connecting point " + l_currentPoint.m_ID + " to point " + l_newPoint.m_ID);
+                        //Debug.Log("DunGen: Connecting point " + l_currentPoint.m_ID + " to point " + l_newPoint.m_ID);
 
                         // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
                         l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);

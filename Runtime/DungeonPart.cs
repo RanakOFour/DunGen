@@ -43,11 +43,11 @@ namespace RanaksDunGen
 
         public void ReorientSize()
         {
-            string l_debugMessage = "Dungeon Generator: Reorienting Shape of Size " + m_Size;
+            //string l_debugMessage = "Dungeon Generator: Reorienting Shape of Size " + m_Size;
 
             Vector3 l_eulers = transform.rotation.eulerAngles;
 
-            l_debugMessage += "\nEulers: " + l_eulers;
+            //l_debugMessage += "\nEulers: " + l_eulers;
 
             // Leaving this as a vec3 incase other rotations are wanted later
             Vector3 l_quarterTurns = new Vector3(
@@ -104,9 +104,9 @@ namespace RanaksDunGen
             //     m_Offset.x *= -1;
             // }
 
-            l_debugMessage += "\nNew Size: " + m_Size;
+            //l_debugMessage += "\nNew Size: " + m_Size;
 
-            Debug.Log(l_debugMessage);
+            //Debug.Log(l_debugMessage);
 
             m_Dirty = true;
         }
@@ -114,7 +114,7 @@ namespace RanaksDunGen
         public List<Vector3> GetCoordinates(Vector3 _center)
         {
             _center += m_Offset;
-            string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
+            //string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
 
             if (m_Dirty)
             {
@@ -129,7 +129,7 @@ namespace RanaksDunGen
                     RoundToZero(_center.z - l_halfSize.z)
                 );
 
-                l_debugMessage += "\n Lower Bound: " + l_negBound;
+                //l_debugMessage += "\n Lower Bound: " + l_negBound;
 
                 // Iterate through each coordinate in the discrete grid
 
@@ -148,14 +148,14 @@ namespace RanaksDunGen
                 if (m_Coordinates.Count != l_voxelCount)
                 {
                     int l_diff = (int)l_voxelCount - m_Coordinates.Count;
-                    l_debugMessage = "Dungeon Generator: " + gameObject.name + " Failed Coordinate Count by " + l_diff + "\n" + l_debugMessage;
+                    //l_debugMessage = "Dungeon Generator: " + gameObject.name + " Failed Coordinate Count by " + l_diff + "\n" + l_debugMessage;
                     Debug.LogWarning(l_debugMessage);
                 }
 
                 m_Dirty = false;
             }
 
-            Debug.Log(l_debugMessage);
+            //Debug.Log(l_debugMessage);
 
             return m_Coordinates;
         }
@@ -172,7 +172,7 @@ namespace RanaksDunGen
                 l_connectionPoints[i].m_ID = i;
             }
 
-            Debug.Log("DunGen: ConnectionIDs Set");
+            //Debug.Log("DunGen: ConnectionIDs Set");
         }
 
         // Rounds numbers down towards zero i.e. 3.5 -> 3.0, -3.5 -> -3.0
