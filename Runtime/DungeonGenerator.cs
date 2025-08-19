@@ -134,59 +134,68 @@ namespace RanaksDunGen
                 GameObject l_currentPiece = l_partQueue.Dequeue();
                 ConnectionPoint[] l_connectionPoints = l_currentPiece.GetComponentsInChildren<ConnectionPoint>();
 
-                foreach (ConnectionPoint l_currentPoint in l_connectionPoints)
+                // Randomise connectionPoint array
+                int l_maxIndex = l_connectionPoints.Count;
+                while (l_maxIndex > 1)
                 {
-                    // If we run out of parts midway through the foreach
-                    if (l_dungeonParts.Count == 0) { l_currentPoint.Hide(); break; }
+                    int l_randomIndex = UnityEngine.Range(0, l_maxIndex + 1);
+                    (l_connectionPoints[l_maxIndex], l_connectionPoints[l_randomIndex] = l_connectionPoints[l_randomIndex], l_connectionPoints[l_maxIndex]);
+                    l_maxIndex--;
+                }
 
-                    // Skip connected points and exit
-                    if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
-
-
-                    bool l_partFits = false;
-                    // Prevent deadlocking
-                    int l_unsuccessfulFits = 0;
-
-                    while (!l_partFits && l_unsuccessfulFits < 6)
+                foreach (ConnectionPoint l_currentPoint in l_connectionPoints)
                     {
-                        // Cycle through parts randomly until one that can be placed is found
-                        int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
+                        // If we run out of parts midway through the foreach
+                        if (l_dungeonParts.Count == 0) { l_currentPoint.Hide(); break; }
 
-                        GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
-                        ConnectionPoint l_newPoint = l_newPiece.GetComponentInChildren<ConnectionPoint>();
+                        // Skip connected points and exit
+                        if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
 
-                        // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
-                        l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);
-                        l_newPiece.GetComponent<DungeonPart>().ReorientSize();
 
-                        // Accounts for difference in overlapping pieces
-                        Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
-                        l_newPiece.transform.position += l_translate;
+                        bool l_partFits = false;
+                        // Prevent deadlocking
+                        int l_unsuccessfulFits = 0;
 
-                        if (DoesObjectFit(ref l_newPiece, ref l_VoxelMap))
+                        while (!l_partFits && l_unsuccessfulFits < 6)
                         {
-                            l_partFits = true;
-                            FillMap(ref l_newPiece, ref l_VoxelMap);
-                            l_newPoint.Connect();
-                            l_currentPoint.Connect();
-                            l_partQueue.Enqueue(l_newPiece);
+                            // Cycle through parts randomly until one that can be placed is found
+                            int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
 
-                            //Increment number of instances and remove from list if the maximum number if instances is reached
-                            l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab]++;
-                            if (l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab] == l_dungeonParts[l_newPieceIndex].m_MaxIterations)
+                            GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
+                            ConnectionPoint l_newPoint = l_newPiece.GetComponentInChildren<ConnectionPoint>();
+
+                            // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
+                            l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);
+                            l_newPiece.GetComponent<DungeonPart>().ReorientSize();
+
+                            // Accounts for difference in overlapping pieces
+                            Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
+                            l_newPiece.transform.position += l_translate;
+
+                            if (DoesObjectFit(ref l_newPiece, ref l_VoxelMap))
                             {
-                                l_dungeonParts.Remove(l_dungeonParts[l_newPieceIndex]);
+                                l_partFits = true;
+                                FillMap(ref l_newPiece, ref l_VoxelMap);
+                                l_newPoint.Connect();
+                                l_currentPoint.Connect();
+                                l_partQueue.Enqueue(l_newPiece);
+
+                                //Increment number of instances and remove from list if the maximum number if instances is reached
+                                l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab]++;
+                                if (l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab] == l_dungeonParts[l_newPieceIndex].m_MaxIterations)
+                                {
+                                    l_dungeonParts.Remove(l_dungeonParts[l_newPieceIndex]);
+                                }
+                            }
+                            else
+                            {
+                                GameObject.Destroy(l_newPiece);
+                                l_unsuccessfulFits += 1;
                             }
                         }
-                        else
-                        {
-                            GameObject.Destroy(l_newPiece);
-                            l_unsuccessfulFits += 1;
-                        }
-                    }
 
-                    l_currentPoint.Hide();
-                }
+                        l_currentPoint.Hide();
+                    }
             }
 
             // Clear all remaining conenction points
