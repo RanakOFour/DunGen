@@ -31,3 +31,6 @@
 ## [1.1.7] 13.08.2025
 - Readded voxel resizing
 - General fixes (I forgot)
+
+## [1.2.0] 19.08.2025
+- Added randomisation of connectionpoints before cycling
