@@ -139,7 +139,10 @@ namespace RanaksDunGen
                 while (l_maxIndex > 1)
                 {
                     int l_randomIndex = UnityEngine.Range(0, l_maxIndex + 1);
-                    (l_connectionPoints[l_maxIndex], l_connectionPoints[l_randomIndex] = l_connectionPoints[l_randomIndex], l_connectionPoints[l_maxIndex]);
+                    ConnectionPoint l_temp = l_connectionPoints[l_maxIndex];
+                    l_connectionPoints[l_maxIndex] = l_connectionPoints[l_randomIndex];
+                    l_connectionPoints[l_randomIndex] = l_temp;
+
                     l_maxIndex--;
                 }
 
