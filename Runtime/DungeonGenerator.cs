@@ -135,7 +135,7 @@ namespace RanaksDunGen
                 ConnectionPoint[] l_connectionPoints = l_currentPiece.GetComponentsInChildren<ConnectionPoint>();
 
                 // Randomise connectionPoint array
-                int l_maxIndex = l_connectionPoints.Count;
+                int l_maxIndex = l_connectionPoints.Length;
                 while (l_maxIndex > 1)
                 {
                     int l_randomIndex = UnityEngine.Random.Range(0, l_maxIndex + 1);
