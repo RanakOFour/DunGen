@@ -56,17 +56,53 @@ namespace RanaksDunGen
                 l_eulers.z / 90.0f
             );
 
+            // Makes rotation positive for % operation to work
+            if (l_eulers.y < 0)
+            {
+                l_eulers.y += 4.0f;
+            }
+
             l_debugMessage += "\nQuarter Turns: " + l_quarterTurns;
 
             // Switch lengths if needed
-            if (Mathf.Round(l_quarterTurns.y) % 2 == 1)
+            switch (Mathf.Round(l_quarterTurns.y))
             {
-                (m_Size.x, m_Size.z) = (m_Size.z, m_Size.x);
-                (m_Offset.x, m_Offset.z) = (m_Offset.z, m_Offset.x);
-                m_Offset.x = -m_Offset.x;
-                m_Offset.z = -m_Offset.z;
-                
+                case 1:
+                    m_Offset.x *= -1;
+                    (m_Size.x, m_Size.z) = (m_Size.z, m_Size.x);
+
+                    // Swap offset axis on quarter turns
+                    (m_Offset.x, m_Offset.z) = (m_Offset.z, m_Offset.x);
+                    break;
+                case 3:
+                    (m_Size.x, m_Size.z) = (m_Size.z, m_Size.x);
+
+                    // Swap offset axis on quarter turns
+                    (m_Offset.x, m_Offset.z) = (m_Offset.z, m_Offset.x);
+                    break;
+
+                case 2:
+                    m_Offset.x *= -1;
+                    break;
             }
+
+            // Switch lengths if needed
+            // if (Mathf.Round(l_quarterTurns.y) % 2 == 1)
+            // {
+            //     (m_Size.x, m_Size.z) = (m_Size.z, m_Size.x);
+
+            //     // Swap offset axis on quarter turns
+            //     (m_Offset.x, m_Offset.z) = (m_Offset.z, m_Offset.x);
+
+
+            //     m_Offset.z *= -1;
+            // }
+
+            // // Flip offsets on half turns
+            // if (Mathf.Round(l_quarterTurns.y) == 2)
+            // {
+            //     m_Offset.x *= -1;
+            // }
 
             l_debugMessage += "\nNew Size: " + m_Size;
 

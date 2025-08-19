@@ -38,3 +38,6 @@
 ## [1.3.0] 19.08.2025
 - Changed randomisation to be a random point on the piece to connect
 - Removed randomisation of point from the initial piece
+
+## [1.3.1] 19.08.2025
+- Fixed bug with offsets on rotated pieces
