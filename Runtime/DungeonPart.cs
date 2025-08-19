@@ -19,14 +19,18 @@ namespace RanaksDunGen
 
         private bool m_Dirty;
 
+        private bool m_Init;
+
         public void Awake()
         {
             m_Dirty = true;
+            m_Init = false;
         }
 
         public void Start()
         {
             m_Dirty = true;
+            m_Init = false;
         }
 
         [ExecuteInEditMode]
@@ -58,6 +62,10 @@ namespace RanaksDunGen
             if (Mathf.Round(l_quarterTurns.y) % 2 == 1)
             {
                 (m_Size.x, m_Size.z) = (m_Size.z, m_Size.x);
+                (m_Offset.x, m_Offset.z) = (m_Offset.z, m_Offset.x);
+                m_Offset.x = -m_Offset.x;
+                m_Offset.z = -m_Offset.z;
+                
             }
 
             l_debugMessage += "\nNew Size: " + m_Size;
@@ -114,6 +122,21 @@ namespace RanaksDunGen
             Debug.Log(l_debugMessage);
 
             return m_Coordinates;
+        }
+
+        public void Init()
+        {
+            if (m_Init) return;
+
+            m_Init = true;
+
+            ConnectionPoint[] l_connectionPoints = gameObject.GetComponentsInChildren<ConnectionPoint>();
+            for (int i = 0; i < l_connectionPoints.Length; i++)
+            {
+                l_connectionPoints[i].m_ID = i;
+            }
+
+            Debug.Log("DunGen: ConnectionIDs Set");
         }
 
         // Rounds numbers down towards zero i.e. 3.5 -> 3.0, -3.5 -> -3.0

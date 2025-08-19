@@ -34,3 +34,7 @@
 
 ## [1.2.0] 19.08.2025
 - Added randomisation of connectionpoints before cycling
+
+## [1.3.0] 19.08.2025
+- Changed randomisation to be a random point on the piece to connect
+- Removed randomisation of point from the initial piece

@@ -132,73 +132,70 @@ namespace RanaksDunGen
             while (l_partQueue.Count > 0 && l_dungeonParts.Count > 0)
             {
                 GameObject l_currentPiece = l_partQueue.Dequeue();
+                l_currentPiece.GetComponent<DungeonPart>().Init();
+
                 ConnectionPoint[] l_connectionPoints = l_currentPiece.GetComponentsInChildren<ConnectionPoint>();
 
-                // Randomise connectionPoint array
-                int l_maxIndex = l_connectionPoints.Length;
-                while (l_maxIndex > 1)
-                {
-                    int l_randomIndex = UnityEngine.Random.Range(0, l_maxIndex + 1);
-                    ConnectionPoint l_temp = l_connectionPoints[l_maxIndex];
-                    l_connectionPoints[l_maxIndex] = l_connectionPoints[l_randomIndex];
-                    l_connectionPoints[l_randomIndex] = l_temp;
-
-                    l_maxIndex--;
-                }
-
                 foreach (ConnectionPoint l_currentPoint in l_connectionPoints)
+                {
+                    // If we run out of parts midway through the foreach
+                    if (l_dungeonParts.Count == 0) { l_currentPoint.Hide(); break; }
+
+                    // Skip connected points and exit
+                    if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
+
+                    Debug.Log("DunGen: Working on ConnectionPoint ID " + l_currentPoint.m_ID);
+
+                    bool l_partFits = false;
+                    // Prevent deadlocking
+                    int l_unsuccessfulFits = 0;
+
+                    while (!l_partFits && l_unsuccessfulFits < 6)
                     {
-                        // If we run out of parts midway through the foreach
-                        if (l_dungeonParts.Count == 0) { l_currentPoint.Hide(); break; }
+                        // Cycle through parts randomly until one that can be placed is found
+                        int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
 
-                        // Skip connected points and exit
-                        if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
+                        GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
+                        l_newPiece.GetComponent<DungeonPart>().Init();
 
+                        // Get random connectionPoint;
+                        ConnectionPoint[] l_newPiecePoints = l_newPiece.GetComponentsInChildren<ConnectionPoint>();
+                        ConnectionPoint l_newPoint = l_newPiecePoints[UnityEngine.Random.Range(0, l_newPiecePoints.Length)];
 
-                        bool l_partFits = false;
-                        // Prevent deadlocking
-                        int l_unsuccessfulFits = 0;
+                        Debug.Log("DunGen: Connecting point " + l_currentPoint.m_ID + " to point " + l_newPoint.m_ID);
 
-                        while (!l_partFits && l_unsuccessfulFits < 6)
+                        // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
+                        l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);
+                        l_newPiece.GetComponent<DungeonPart>().ReorientSize();
+
+                        // Accounts for difference in overlapping pieces
+                        Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
+                        l_newPiece.transform.position += l_translate;
+
+                        if (DoesObjectFit(ref l_newPiece, ref l_VoxelMap))
                         {
-                            // Cycle through parts randomly until one that can be placed is found
-                            int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
+                            l_partFits = true;
+                            FillMap(ref l_newPiece, ref l_VoxelMap);
+                            l_newPoint.Connect();
+                            l_currentPoint.Connect();
+                            l_partQueue.Enqueue(l_newPiece);
 
-                            GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
-                            ConnectionPoint l_newPoint = l_newPiece.GetComponentInChildren<ConnectionPoint>();
-
-                            // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
-                            l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);
-                            l_newPiece.GetComponent<DungeonPart>().ReorientSize();
-
-                            // Accounts for difference in overlapping pieces
-                            Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
-                            l_newPiece.transform.position += l_translate;
-
-                            if (DoesObjectFit(ref l_newPiece, ref l_VoxelMap))
+                            //Increment number of instances and remove from list if the maximum number if instances is reached
+                            l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab]++;
+                            if (l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab] == l_dungeonParts[l_newPieceIndex].m_MaxIterations)
                             {
-                                l_partFits = true;
-                                FillMap(ref l_newPiece, ref l_VoxelMap);
-                                l_newPoint.Connect();
-                                l_currentPoint.Connect();
-                                l_partQueue.Enqueue(l_newPiece);
-
-                                //Increment number of instances and remove from list if the maximum number if instances is reached
-                                l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab]++;
-                                if (l_IterationCounts[l_dungeonParts[l_newPieceIndex].m_Prefab] == l_dungeonParts[l_newPieceIndex].m_MaxIterations)
-                                {
-                                    l_dungeonParts.Remove(l_dungeonParts[l_newPieceIndex]);
-                                }
-                            }
-                            else
-                            {
-                                GameObject.Destroy(l_newPiece);
-                                l_unsuccessfulFits += 1;
+                                l_dungeonParts.Remove(l_dungeonParts[l_newPieceIndex]);
                             }
                         }
-
-                        l_currentPoint.Hide();
+                        else
+                        {
+                            GameObject.Destroy(l_newPiece);
+                            l_unsuccessfulFits += 1;
+                        }
                     }
+
+                    l_currentPoint.Hide();
+                }
             }
 
             // Clear all remaining conenction points
@@ -310,19 +307,19 @@ namespace RanaksDunGen
                     l_yCheck ||
                     l_zCheck)
                 {
-                    Debug.Log("Dungeon Generator: Object does not fit. Error coord: " + l_currentCoord);
+                    //Debug.Log("Dungeon Generator: Object does not fit. Error coord: " + l_currentCoord);
                     return false;
                 }
 
-                Debug.Log("Voxel map check at: " + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2]);
+                //Debug.Log("Voxel map check at: " + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2]);
                 if (_VoxelMap.Contains(l_currentCoord))
                 {
-                    Debug.Log("Dungeon Generator: Object overlaps another. Error coord: " + l_currentCoord);
+                    //Debug.Log("Dungeon Generator: Object overlaps another. Error coord: " + l_currentCoord);
                     return false;
                 }
             }
 
-            Debug.Log("Dungeon Generator: Object fits");
+            //Debug.Log("Dungeon Generator: Object fits");
             return true;
         }
 

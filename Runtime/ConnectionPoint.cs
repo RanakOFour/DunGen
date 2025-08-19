@@ -9,6 +9,8 @@ namespace RanaksDunGen
         [SerializeField]
         private bool m_Connected;
 
+        public int m_ID = 0;
+
         private void Awake()
         {
             m_Connected = false;
