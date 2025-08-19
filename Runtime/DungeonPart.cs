@@ -62,7 +62,7 @@ namespace RanaksDunGen
                 l_eulers.y += 4.0f;
             }
 
-            l_debugMessage += "\nQuarter Turns: " + l_quarterTurns;
+            //l_debugMessage += "\nQuarter Turns: " + l_quarterTurns;
 
             // Switch lengths if needed
             switch (Mathf.Round(l_quarterTurns.y))
@@ -114,7 +114,7 @@ namespace RanaksDunGen
         public List<Vector3> GetCoordinates(Vector3 _center)
         {
             _center += m_Offset;
-            //string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
+            string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
 
             if (m_Dirty)
             {
@@ -129,7 +129,7 @@ namespace RanaksDunGen
                     RoundToZero(_center.z - l_halfSize.z)
                 );
 
-                //l_debugMessage += "\n Lower Bound: " + l_negBound;
+                l_debugMessage += "\n Lower Bound: " + l_negBound;
 
                 // Iterate through each coordinate in the discrete grid
 
@@ -148,7 +148,7 @@ namespace RanaksDunGen
                 if (m_Coordinates.Count != l_voxelCount)
                 {
                     int l_diff = (int)l_voxelCount - m_Coordinates.Count;
-                    //l_debugMessage = "Dungeon Generator: " + gameObject.name + " Failed Coordinate Count by " + l_diff + "\n" + l_debugMessage;
+                    l_debugMessage = "Dungeon Generator: " + gameObject.name + " Failed Coordinate Count by " + l_diff + "\n" + l_debugMessage;
                     Debug.LogWarning(l_debugMessage);
                 }
 

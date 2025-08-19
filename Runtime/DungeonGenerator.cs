@@ -484,7 +484,11 @@ namespace RanaksDunGen
             }
 
             l_debugMessage += "\nOptimal voxel size: " + l_dimensionHCF;
-            Debug.Log(l_debugMessage);
+
+            // if (m_Debug)
+            // {
+            //     Debug.Log(l_debugMessage);
+            // }
 
             return l_dimensionHCF;
         }
