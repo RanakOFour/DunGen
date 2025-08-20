@@ -41,3 +41,7 @@
 
 ## [1.3.1] 19.08.2025
 - Fixed bug with offsets on rotated pieces
+
+## [1.3.2] 20.08.2025
+- Renamed DungeonPart to DunGenRoom
+- Added icons to DunGenRoom, DungeonGenerator and ConnectionPoint

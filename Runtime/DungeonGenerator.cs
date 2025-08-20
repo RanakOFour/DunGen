@@ -5,6 +5,7 @@ using UnityEngine;
 namespace RanaksDunGen
 {
     // Holds static data about the dungeon
+    [Icon("Packages/DunGen/Editor/Gizmos/DunGeneratorIcon.png")]
     public class DungeonGenerator : MonoBehaviour
     {
         private Vector3 m_VoxelSize = Vector3.one;
@@ -22,7 +23,7 @@ namespace RanaksDunGen
         private GameObject m_StartingRoom;
 
         [Serializable]
-        public struct DungeonPartContainer
+        public struct DunGenRoomContainer
         {
             [Tooltip("The prefab to be used for this dungeon part")]
             [SerializeField]
@@ -35,7 +36,7 @@ namespace RanaksDunGen
 
         [Tooltip("Unique prefabs that will make up the dungeon")]
         [SerializeField]
-        private List<DungeonPartContainer> m_DungeonParts;
+        private List<DunGenRoomContainer> m_DungeonParts;
 
         private void Awake()
         {
@@ -72,7 +73,7 @@ namespace RanaksDunGen
 
             if (!ArePartsValid())
             {
-                Debug.LogWarning("RanaksDunGen: There are parts without DungeonPart scripts attatched!");
+                Debug.LogWarning("RanaksDunGen: There are parts without DunGenRoom scripts attatched!");
                 return;
             }
 
@@ -84,16 +85,16 @@ namespace RanaksDunGen
 
 
             // Copy m_DungeonParts
-            List<DungeonPartContainer> l_dungeonParts = new List<DungeonPartContainer>(m_DungeonParts);
+            List<DunGenRoomContainer> l_dungeonParts = new List<DunGenRoomContainer>(m_DungeonParts);
 
             if (m_VoxelSizeCheck)
             {
                 Vector3 l_hcf = DetermineVoxelSize();
 
-                DungeonPart l_prefabPart;
-                foreach (DungeonPartContainer dcp in l_dungeonParts)
+                DunGenRoom l_prefabPart;
+                foreach (DunGenRoomContainer dcp in l_dungeonParts)
                 {
-                    l_prefabPart = dcp.m_Prefab.GetComponent<DungeonPart>();
+                    l_prefabPart = dcp.m_Prefab.GetComponent<DunGenRoom>();
                     l_prefabPart.m_Size.x /= (int)l_hcf.x;
                     l_prefabPart.m_Size.y /= (int)l_hcf.y;
                     l_prefabPart.m_Size.z /= (int)l_hcf.z;
@@ -107,7 +108,7 @@ namespace RanaksDunGen
             // I tried adding an 'm_Iterations' property to DungeonParts but it wouldn't work for some reason when changing the value
             // MAXITERATION FAULT
             Dictionary<GameObject, int> l_IterationCounts = new Dictionary<GameObject, int>();
-            foreach (DungeonPartContainer dp in l_dungeonParts)
+            foreach (DunGenRoomContainer dp in l_dungeonParts)
             {
                 l_IterationCounts.Add(dp.m_Prefab, 0);
             }
@@ -132,7 +133,7 @@ namespace RanaksDunGen
             while (l_partQueue.Count > 0 && l_dungeonParts.Count > 0)
             {
                 GameObject l_currentPiece = l_partQueue.Dequeue();
-                l_currentPiece.GetComponent<DungeonPart>().Init();
+                l_currentPiece.GetComponent<DunGenRoom>().Init();
 
                 ConnectionPoint[] l_connectionPoints = l_currentPiece.GetComponentsInChildren<ConnectionPoint>();
 
@@ -156,7 +157,7 @@ namespace RanaksDunGen
                         int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
 
                         GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
-                        l_newPiece.GetComponent<DungeonPart>().Init();
+                        l_newPiece.GetComponent<DunGenRoom>().Init();
 
                         // Get random connectionPoint;
                         ConnectionPoint[] l_newPiecePoints = l_newPiece.GetComponentsInChildren<ConnectionPoint>();
@@ -166,7 +167,7 @@ namespace RanaksDunGen
 
                         // Using Quaternion.AngleAxis messes with l_newPiece transform, and that isn't good
                         l_newPiece.transform.Rotate(Vector3.up, l_currentPoint.transform.eulerAngles.y - l_newPoint.transform.eulerAngles.y + 180f);
-                        l_newPiece.GetComponent<DungeonPart>().ReorientSize();
+                        l_newPiece.GetComponent<DunGenRoom>().ReorientSize();
 
                         // Accounts for difference in overlapping pieces
                         Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
@@ -220,15 +221,15 @@ namespace RanaksDunGen
         // See if all prefabs have DungeonParts
         private bool ArePartsValid()
         {
-            DungeonPart l_test = m_StartingRoom.GetComponent<DungeonPart>();
+            DunGenRoom l_test = m_StartingRoom.GetComponent<DunGenRoom>();
             if (!l_test)
             {
                 return false;
             }
 
-            foreach (DungeonPartContainer dpc in m_DungeonParts)
+            foreach (DunGenRoomContainer dpc in m_DungeonParts)
             {
-                l_test = dpc.m_Prefab.GetComponent<DungeonPart>();
+                l_test = dpc.m_Prefab.GetComponent<DunGenRoom>();
                 if (!l_test)
                 {
                     return false;
@@ -252,7 +253,7 @@ namespace RanaksDunGen
                 for (int j = 0; j < m_DungeonParts.Count; j++)
                 {
                     GameObject l_newPiece = GameObject.Instantiate(m_DungeonParts[j].m_Prefab, gameObject.transform);
-                    DungeonPart l_prefab = l_newPiece.GetComponent<DungeonPart>();
+                    DunGenRoom l_prefab = l_newPiece.GetComponent<DunGenRoom>();
                     l_prefab.ReorientSize();
 
                     l_center -= Vector3.one * 0.5f;
@@ -282,7 +283,7 @@ namespace RanaksDunGen
 
         private bool DoesObjectFit(ref GameObject _dungeonPart, ref List<Vector3> _VoxelMap)
         {
-            DungeonPart l_prefab = _dungeonPart.GetComponent<DungeonPart>();
+            DunGenRoom l_prefab = _dungeonPart.GetComponent<DunGenRoom>();
             Vector3 l_shapeCenter = new Vector3(
                                            _dungeonPart.transform.position.x / m_VoxelSize.x,
                                            _dungeonPart.transform.position.y / m_VoxelSize.y,
@@ -325,7 +326,7 @@ namespace RanaksDunGen
 
         private void FillMap(ref GameObject _dungeonPart, ref List<Vector3> _VoxelMap)
         {
-            DungeonPart l_prefab = _dungeonPart.GetComponent<DungeonPart>();
+            DunGenRoom l_prefab = _dungeonPart.GetComponent<DunGenRoom>();
 
             // Voxel position of prefabs center
             Vector3 l_shapeCenter = new Vector3(
@@ -389,10 +390,10 @@ namespace RanaksDunGen
             List<Vector3> l_partSizes = new List<Vector3>();
 
             // Get minimum size values of each dimension
-            DungeonPart l_prefabPart;
-            foreach (DungeonPartContainer dcp in m_DungeonParts)
+            DunGenRoom l_prefabPart;
+            foreach (DunGenRoomContainer dcp in m_DungeonParts)
             {
-                l_prefabPart = dcp.m_Prefab.GetComponent<DungeonPart>();
+                l_prefabPart = dcp.m_Prefab.GetComponent<DunGenRoom>();
                 l_partSizes.Add(l_prefabPart.m_Size);
 
                 if (l_minValues.x > l_prefabPart.m_Size.x)

@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace RanaksDunGen
 {
-    // Holds static data about the dungeon part
-    public class DungeonPart : MonoBehaviour
+    [Icon("Packages/DunGen/Editor/Gizmos/DunGenRoomIcon.png")]
+    public class DunGenRoom : MonoBehaviour
     {
         [Tooltip("Size in voxels of the part")]
         [SerializeField]
