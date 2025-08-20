@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace RanaksDunGen
 {
-    [Icon("Packages/DunGen/Editor/Gizmos/ConnectionPointIcon.png")]
+    [Icon("Packages/RanaksDunGen/Editor/Gizmos/ConnectionPointIcon.png")]
     [Tooltip("Place at points where the prefab can be connected with. Must face outwards from prefab.")]
     public class ConnectionPoint : MonoBehaviour
     {

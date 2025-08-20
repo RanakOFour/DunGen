@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace RanaksDunGen
 {
-    [Icon("Packages/DunGen/Editor/Gizmos/DunGenRoomIcon.png")]
+    [Icon("Packages/RanaksDunGen/Editor/Gizmos/DunGenRoomIcon.png")]
     public class DunGenRoom : MonoBehaviour
     {
         [Tooltip("Size in voxels of the part")]

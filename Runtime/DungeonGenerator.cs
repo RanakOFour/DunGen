@@ -5,7 +5,7 @@ using UnityEngine;
 namespace RanaksDunGen
 {
     // Holds static data about the dungeon
-    [Icon("Packages/DunGen/Editor/Gizmos/DunGeneratorIcon.png")]
+    [Icon("Packages/RanaksDunGen/Editor/Gizmos/DunGeneratorIcon.png")]
     public class DungeonGenerator : MonoBehaviour
     {
         private Vector3 m_VoxelSize = Vector3.one;
