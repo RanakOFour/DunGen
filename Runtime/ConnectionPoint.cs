@@ -9,8 +9,7 @@ namespace RanaksDunGen
         // If true, the connection has been used
         [SerializeField]
         private bool m_Connected;
-
-        public int m_ID = 0;
+        private int m_ID = 0;
 
         private void Awake()
         {
@@ -33,6 +32,16 @@ namespace RanaksDunGen
             {
                 transform.GetChild(0).gameObject.SetActive(false);
             }
+        }
+
+        public void ID(int _id)
+        {
+            m_ID = _id;
+        }
+
+        public int ID()
+        {
+            return m_ID;
         }
     }
 }

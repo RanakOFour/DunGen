@@ -25,12 +25,29 @@ namespace RanaksDunGen
         {
             m_Dirty = true;
             m_Init = false;
+            Init();
         }
 
         public void Start()
         {
             m_Dirty = true;
             m_Init = false;
+            Init();
+        }
+
+        private void Init()
+        {
+            if (m_Init) return;
+
+            m_Init = true;
+
+            ConnectionPoint[] l_connectionPoints = gameObject.GetComponentsInChildren<ConnectionPoint>();
+            for (int i = 0; i < l_connectionPoints.Length; i++)
+            {
+                l_connectionPoints[i].ID(i);
+            }
+
+            //Debug.Log("DunGen: ConnectionIDs Set");
         }
 
         [ExecuteInEditMode]
@@ -158,21 +175,6 @@ namespace RanaksDunGen
             //Debug.Log(l_debugMessage);
 
             return m_Coordinates;
-        }
-
-        public void Init()
-        {
-            if (m_Init) return;
-
-            m_Init = true;
-
-            ConnectionPoint[] l_connectionPoints = gameObject.GetComponentsInChildren<ConnectionPoint>();
-            for (int i = 0; i < l_connectionPoints.Length; i++)
-            {
-                l_connectionPoints[i].m_ID = i;
-            }
-
-            //Debug.Log("DunGen: ConnectionIDs Set");
         }
 
         // Rounds numbers down towards zero i.e. 3.5 -> 3.0, -3.5 -> -3.0

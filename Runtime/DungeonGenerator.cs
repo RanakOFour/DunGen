@@ -133,7 +133,6 @@ namespace RanaksDunGen
             while (l_partQueue.Count > 0 && l_dungeonParts.Count > 0)
             {
                 GameObject l_currentPiece = l_partQueue.Dequeue();
-                l_currentPiece.GetComponent<DunGenRoom>().Init();
 
                 ConnectionPoint[] l_connectionPoints = l_currentPiece.GetComponentsInChildren<ConnectionPoint>();
 
@@ -157,7 +156,6 @@ namespace RanaksDunGen
                         int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
 
                         GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
-                        l_newPiece.GetComponent<DunGenRoom>().Init();
 
                         // Get random connectionPoint;
                         ConnectionPoint[] l_newPiecePoints = l_newPiece.GetComponentsInChildren<ConnectionPoint>();
