@@ -486,7 +486,7 @@ namespace RanaksDunGen
 
             // if (m_Debug)
             // {
-            Debug.Log(l_debugMessage);
+            //Debug.Log(l_debugMessage);
             // }
 
             return l_dimensionHCF;

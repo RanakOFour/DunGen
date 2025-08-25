@@ -201,7 +201,7 @@ namespace RanaksDunGen
                 m_Dirty = false;
             }
 
-            Debug.Log(l_debugMessage);
+            //Debug.Log(l_debugMessage);
 
             return m_Coordinates;
         }
