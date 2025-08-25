@@ -1,6 +1,6 @@
 {
   "name": "com.ranakofour.dungen",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "displayName": "RanaksDunGen",
   "description": "Dungeon Generator for UnityEngine",
   "unity": "2022.3",

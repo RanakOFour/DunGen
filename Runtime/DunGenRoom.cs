@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using UnityEditor.EditorTools;
+using UnityEditor.SearchService;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using UnityEngine.UIElements;
 
 namespace RanaksDunGen
 {
@@ -53,8 +56,30 @@ namespace RanaksDunGen
         [ExecuteInEditMode]
         public void OnDrawGizmos()
         {
+            GameObject[] l_objects = SceneManager.GetActiveScene().GetRootGameObjects();
+            Vector3 l_voxSize = Vector3.one;
             Gizmos.color = Color.red;
-            Gizmos.DrawWireCube(transform.position + m_Offset, m_Size);
+
+            foreach (GameObject obj in l_objects)
+            {
+                if (obj.TryGetComponent(out DunGenerator _generator))
+                {
+                    l_voxSize = _generator.GetVoxelSize();
+                    Gizmos.color = Color.blue;
+                }
+            }
+
+            Vector3 l_sizeToDraw = new Vector3(
+                m_Size.x / l_voxSize.x,
+                m_Size.y / l_voxSize.y,
+                m_Size.z / l_voxSize.x
+            );
+
+            l_sizeToDraw.x *= l_voxSize.x;
+            l_sizeToDraw.y *= l_voxSize.y;
+            l_sizeToDraw.z *= l_voxSize.x;
+
+            Gizmos.DrawWireCube(transform.position + m_Offset, l_sizeToDraw);
             Gizmos.color = Color.white;
         }
 
@@ -93,7 +118,6 @@ namespace RanaksDunGen
                     break;
                 case 3:
                     (m_Size.x, m_Size.z) = (m_Size.z, m_Size.x);
-
                     // Swap offset axis on quarter turns
                     (m_Offset.x, m_Offset.z) = (m_Offset.z, m_Offset.x);
                     break;
@@ -128,18 +152,23 @@ namespace RanaksDunGen
             m_Dirty = true;
         }
 
-        public List<Vector3> GetCoordinates(Vector3 _center)
+        public List<Vector3> GetCoordinates(ref Vector3 _center, ref Vector3 _voxelSize)
         {
-            _center += m_Offset;
             string l_debugMessage = "Dungeon Generator: GetCoordinates of object center: " + _center;
 
             if (m_Dirty)
             {
                 m_Coordinates = new List<Vector3>();
 
-                int l_voxelCount = m_Size.x * m_Size.y * m_Size.z;
+                Vector3Int l_adjustedSize = new Vector3Int(
+                    m_Size.x / (int)_voxelSize.x,
+                    m_Size.y / (int)_voxelSize.y,
+                    m_Size.z / (int)_voxelSize.z
+                );
 
-                Vector3 l_halfSize = (m_Size + Vector3.one) / 2;
+                int l_voxelCount = l_adjustedSize.x * l_adjustedSize.y * l_adjustedSize.z;
+
+                Vector3 l_halfSize = (l_adjustedSize + Vector3.one) / 2;
                 Vector3Int l_negBound = new Vector3Int(
                     RoundToZero(_center.x - l_halfSize.x),
                     RoundToZero(_center.y - l_halfSize.y),
@@ -150,9 +179,9 @@ namespace RanaksDunGen
 
                 // Iterate through each coordinate in the discrete grid
 
-                for (int x = 0; x < m_Size.x; x++)
-                    for (int y = 0; y < m_Size.y; y++)
-                        for (int z = 0; z < m_Size.z; z++)
+                for (int x = 0; x < l_adjustedSize.x; x++)
+                    for (int y = 0; y < l_adjustedSize.y; y++)
+                        for (int z = 0; z < l_adjustedSize.z; z++)
                         {
                             Vector3Int localPos = new Vector3Int(x, y, z);
                             Vector3Int worldPos = l_negBound + localPos;
@@ -172,7 +201,7 @@ namespace RanaksDunGen
                 m_Dirty = false;
             }
 
-            //Debug.Log(l_debugMessage);
+            Debug.Log(l_debugMessage);
 
             return m_Coordinates;
         }

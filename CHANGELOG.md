@@ -45,3 +45,7 @@
 ## [1.3.2] 20.08.2025
 - Renamed DungeonPart to DunGenRoom
 - Added icons to DunGenRoom, DungeonGenerator and ConnectionPoint
+
+## [1.4.0] 23.08.2025
+- Renamed 'DungeonGenerator' to DunGenerator
+- Reimplemented voxel optimisation

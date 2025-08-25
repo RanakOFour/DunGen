@@ -6,13 +6,15 @@ namespace RanaksDunGen
 {
     // Holds static data about the dungeon
     [Icon("Packages/com.ranakofour.dungen/Editor/Gizmos/DunGeneratorIcon.png")]
-    public class DungeonGenerator : MonoBehaviour
+    public class DunGenerator : MonoBehaviour
     {
         private Vector3 m_VoxelSize = Vector3.one;
 
         // [Tooltip("Set to true to find the optimal voxel size (Could save memory, unstable)")]
         // [SerializeField]
-        private bool m_VoxelSizeCheck = false;
+        private bool m_VoxelSizeCheck = true;
+
+        private bool m_Generated = false;
 
         [Tooltip("Size of the whole dungeon space")]
         [SerializeField]
@@ -77,32 +79,17 @@ namespace RanaksDunGen
                 return;
             }
 
-            // Destroy previously created dungeon right now
-            while (transform.childCount > 0)
+            if (m_Generated)
             {
-                GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
+                ClearPreviousDungeon();
             }
-
 
             // Copy m_DungeonParts
             List<DunGenRoomContainer> l_dungeonParts = new List<DunGenRoomContainer>(m_DungeonParts);
 
             if (m_VoxelSizeCheck)
             {
-                Vector3 l_hcf = DetermineVoxelSize();
-
-                DunGenRoom l_prefabPart;
-                foreach (DunGenRoomContainer dcp in l_dungeonParts)
-                {
-                    l_prefabPart = dcp.m_Prefab.GetComponent<DunGenRoom>();
-                    l_prefabPart.m_Size.x /= (int)l_hcf.x;
-                    l_prefabPart.m_Size.y /= (int)l_hcf.y;
-                    l_prefabPart.m_Size.z /= (int)l_hcf.z;
-
-                    l_prefabPart.m_Offset.x /= (int)l_hcf.x;
-                    l_prefabPart.m_Offset.y /= (int)l_hcf.y;
-                    l_prefabPart.m_Offset.z /= (int)l_hcf.z;
-                }
+                m_VoxelSize = DetermineVoxelSize(ref m_StartingRoom);
             }
 
             // I tried adding an 'm_Iterations' property to DungeonParts but it wouldn't work for some reason when changing the value
@@ -213,6 +200,8 @@ namespace RanaksDunGen
                 }
             }
 
+            m_Generated = true;
+
             Debug.Log("Dungeon Generator: Finished!");
         }
 
@@ -237,6 +226,15 @@ namespace RanaksDunGen
             return true;
         }
 
+        private void ClearPreviousDungeon()
+        {
+            // Destroy previously created dungeon right now
+            while (transform.childCount > 0)
+            {
+                GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
+            }
+        }
+
         /// <summary>
         /// Test method so see if prefabs pass the boundary check.
         /// </summary>
@@ -255,7 +253,7 @@ namespace RanaksDunGen
                     l_prefab.ReorientSize();
 
                     l_center -= Vector3.one * 0.5f;
-                    l_prefab.GetCoordinates(l_center);
+                    l_prefab.GetCoordinates(ref l_center, ref m_VoxelSize);
 
                     GameObject.Destroy(l_newPiece);
                 }
@@ -283,12 +281,12 @@ namespace RanaksDunGen
         {
             DunGenRoom l_prefab = _dungeonPart.GetComponent<DunGenRoom>();
             Vector3 l_shapeCenter = new Vector3(
-                                           _dungeonPart.transform.position.x / m_VoxelSize.x,
-                                           _dungeonPart.transform.position.y / m_VoxelSize.y,
-                                           _dungeonPart.transform.position.z / m_VoxelSize.z
+                                           (_dungeonPart.transform.position.x + l_prefab.m_Offset.x) / m_VoxelSize.x,
+                                           (_dungeonPart.transform.position.y + l_prefab.m_Offset.y) / m_VoxelSize.y,
+                                           (_dungeonPart.transform.position.z + l_prefab.m_Offset.x) / m_VoxelSize.z
                                            );
 
-            List<Vector3> l_prefabCoords = l_prefab.GetCoordinates(l_shapeCenter);
+            List<Vector3> l_prefabCoords = l_prefab.GetCoordinates(ref l_shapeCenter, ref m_VoxelSize);
             Vector3 l_currentCoord;
             foreach (Vector3 coordinate in l_prefabCoords)
             {
@@ -332,7 +330,7 @@ namespace RanaksDunGen
                                        _dungeonPart.transform.position.y / m_VoxelSize.y,
                                        _dungeonPart.transform.position.z / m_VoxelSize.z
                                        );
-            List<Vector3> l_prefabCoords = l_prefab.GetCoordinates(l_shapeCenter);
+            List<Vector3> l_prefabCoords = l_prefab.GetCoordinates(ref l_shapeCenter, ref m_VoxelSize);
 
             Vector3 l_currentCoord;
             for (int i = 0; i < l_prefabCoords.Count; i++)
@@ -378,14 +376,16 @@ namespace RanaksDunGen
         /// <summary>
         /// Determine the most optimal voxel size for the algorithm to save space when keeping the list of used voxels
         /// </summary>
-        private Vector3 DetermineVoxelSize()
+        private Vector3 DetermineVoxelSize(ref GameObject _startingRoom)
         {
             // Steps:
             // 1. Determine HCF of each dimension of the DungeonParts
             // 2. Edit sizes of Dungeon & DungeonParts to compensate
             string l_debugMessage = "RanaksDunGen: Determining optimal voxel size:";
-            Vector3 l_minValues = Vector3.positiveInfinity;
+            Vector3 l_minValues = _startingRoom.GetComponent<DunGenRoom>().m_Size;
             List<Vector3> l_partSizes = new List<Vector3>();
+
+            l_partSizes.Add(_startingRoom.GetComponent<DunGenRoom>().m_Size);
 
             // Get minimum size values of each dimension
             DunGenRoom l_prefabPart;
@@ -486,10 +486,15 @@ namespace RanaksDunGen
 
             // if (m_Debug)
             // {
-            //     Debug.Log(l_debugMessage);
+            Debug.Log(l_debugMessage);
             // }
 
             return l_dimensionHCF;
+        }
+
+        public Vector3 GetVoxelSize()
+        {
+            return m_VoxelSize;
         }
     }
 }
