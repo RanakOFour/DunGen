@@ -49,3 +49,6 @@
 ## [1.4.0] 23.08.2025
 - Renamed 'DungeonGenerator' to DunGenerator
 - Reimplemented voxel optimisation
+
+## [1.5.0] 26.08.2025
+- Changed to Bounds based collision detection

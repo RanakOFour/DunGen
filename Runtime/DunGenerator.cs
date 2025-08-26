@@ -8,12 +8,6 @@ namespace RanaksDunGen
     [Icon("Packages/com.ranakofour.dungen/Editor/Gizmos/DunGeneratorIcon.png")]
     public class DunGenerator : MonoBehaviour
     {
-        private Vector3 m_VoxelSize = Vector3.one;
-
-        // [Tooltip("Set to true to find the optimal voxel size (Could save memory, unstable)")]
-        // [SerializeField]
-        private bool m_VoxelSizeCheck = true;
-
         private bool m_Generated = false;
 
         [Tooltip("Size of the whole dungeon space")]
@@ -61,12 +55,6 @@ namespace RanaksDunGen
                 return;
             }
 
-            if (m_VoxelSize == Vector3.zero)
-            {
-                Debug.LogWarning("RanaksDunGen: No voxel size specified!");
-                return;
-            }
-
             if (m_DungeonSize == Vector3.zero)
             {
                 Debug.LogWarning("RanaksDunGen: No dungeon size specified!");
@@ -81,16 +69,15 @@ namespace RanaksDunGen
 
             if (m_Generated)
             {
-                ClearPreviousDungeon();
+                // Destroy previously created dungeon right now
+                while (transform.childCount > 0)
+                {
+                    GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
+                }
             }
 
             // Copy m_DungeonParts
             List<DunGenRoomContainer> l_dungeonParts = new List<DunGenRoomContainer>(m_DungeonParts);
-
-            if (m_VoxelSizeCheck)
-            {
-                m_VoxelSize = DetermineVoxelSize(ref m_StartingRoom);
-            }
 
             // I tried adding an 'm_Iterations' property to DungeonParts but it wouldn't work for some reason when changing the value
             // MAXITERATION FAULT
@@ -114,8 +101,8 @@ namespace RanaksDunGen
 
             GameObject l_instantiatedPiece = GameObject.Instantiate(m_StartingRoom, gameObject.transform);
             l_partQueue.Enqueue(l_instantiatedPiece);
-            FillMap(ref l_instantiatedPiece, ref l_VoxelMap);
 
+            int l_currentPieceID = 1;
             // Place down new parts until we run out of parts to place or we run out of connections to put them on
             while (l_partQueue.Count > 0 && l_dungeonParts.Count > 0)
             {
@@ -131,7 +118,7 @@ namespace RanaksDunGen
                     // Skip connected points and exit
                     if (l_currentPoint.Connected()) { l_currentPoint.Hide(); continue; }
 
-                    //Debug.Log("DunGen: Working on ConnectionPoint ID " + l_currentPoint.m_ID);
+                    Debug.Log("DunGen: Working on ConnectionPoint ID " + l_currentPoint.ID());
 
                     bool l_partFits = false;
                     // Prevent deadlocking
@@ -143,6 +130,8 @@ namespace RanaksDunGen
                         int l_newPieceIndex = UnityEngine.Random.Range(0, l_dungeonParts.Count);
 
                         GameObject l_newPiece = GameObject.Instantiate(l_dungeonParts[l_newPieceIndex].m_Prefab, gameObject.transform);
+                        l_newPiece.name = "" + l_currentPieceID + ": " + l_newPiece.name;
+                        l_newPiece.name = l_newPiece.name.Split('(')[0];
 
                         // Get random connectionPoint;
                         ConnectionPoint[] l_newPiecePoints = l_newPiece.GetComponentsInChildren<ConnectionPoint>();
@@ -158,10 +147,9 @@ namespace RanaksDunGen
                         Vector3 l_translate = l_currentPoint.transform.position - l_newPoint.transform.position;
                         l_newPiece.transform.position += l_translate;
 
-                        if (DoesObjectFit(ref l_newPiece, ref l_VoxelMap))
+                        if (DoesObjectFit(ref l_newPiece))
                         {
                             l_partFits = true;
-                            FillMap(ref l_newPiece, ref l_VoxelMap);
                             l_newPoint.Connect();
                             l_currentPoint.Connect();
                             l_partQueue.Enqueue(l_newPiece);
@@ -172,6 +160,8 @@ namespace RanaksDunGen
                             {
                                 l_dungeonParts.Remove(l_dungeonParts[l_newPieceIndex]);
                             }
+
+                            l_currentPieceID++;
                         }
                         else
                         {
@@ -226,275 +216,23 @@ namespace RanaksDunGen
             return true;
         }
 
-        private void ClearPreviousDungeon()
+        private bool DoesObjectFit(ref GameObject _dungeonPart)
         {
-            // Destroy previously created dungeon right now
-            while (transform.childCount > 0)
+            DunGenRoom l_dungenRoom = _dungeonPart.GetComponent<DunGenRoom>();
+
+            DunGenRoom l_currentRoom;
+            for (int i = 0; i < gameObject.transform.childCount - 1; i++)
             {
-                GameObject.DestroyImmediate(transform.GetChild(0).gameObject);
-            }
-        }
-
-        /// <summary>
-        /// Test method so see if prefabs pass the boundary check.
-        /// </summary>
-        public void BoundCheck()
-        {
-            int i = 0;
-            Vector3 l_center = Vector3.zero;
-
-            while (l_center.magnitude < 100)
-            {
-                // Check each piece for 
-                for (int j = 0; j < m_DungeonParts.Count; j++)
+                l_currentRoom = gameObject.transform.GetChild(i).GetComponent<DunGenRoom>();
+                if (l_dungenRoom.GetBounds().Intersects(l_currentRoom.GetBounds()))
                 {
-                    GameObject l_newPiece = GameObject.Instantiate(m_DungeonParts[j].m_Prefab, gameObject.transform);
-                    DunGenRoom l_prefab = l_newPiece.GetComponent<DunGenRoom>();
-                    l_prefab.ReorientSize();
-
-                    l_center -= Vector3.one * 0.5f;
-                    l_prefab.GetCoordinates(ref l_center, ref m_VoxelSize);
-
-                    GameObject.Destroy(l_newPiece);
-                }
-
-                i++;
-                if (i % 2 == 0)
-                {
-                    l_center = -l_center;
-                }
-                else
-                {
-                    if (l_center.x > 0)
-                    {
-                        l_center += Vector3.one * 0.5f;
-                    }
-                    else
-                    {
-                        l_center -= Vector3.one * 0.5f;
-                    }
-                }
-            }
-        }
-
-        private bool DoesObjectFit(ref GameObject _dungeonPart, ref List<Vector3> _VoxelMap)
-        {
-            DunGenRoom l_prefab = _dungeonPart.GetComponent<DunGenRoom>();
-            Vector3 l_shapeCenter = new Vector3(
-                                           (_dungeonPart.transform.position.x + l_prefab.m_Offset.x) / m_VoxelSize.x,
-                                           (_dungeonPart.transform.position.y + l_prefab.m_Offset.y) / m_VoxelSize.y,
-                                           (_dungeonPart.transform.position.z + l_prefab.m_Offset.x) / m_VoxelSize.z
-                                           );
-
-            List<Vector3> l_prefabCoords = l_prefab.GetCoordinates(ref l_shapeCenter, ref m_VoxelSize);
-            Vector3 l_currentCoord;
-            foreach (Vector3 coordinate in l_prefabCoords)
-            {
-                l_currentCoord = new Vector3(
-                    (int)(coordinate.x + (m_DungeonSize.x * 0.5f)),
-                    (int)(coordinate.y + (m_DungeonSize.y * 0.5f)),
-                    (int)(coordinate.z + (m_DungeonSize.z * 0.5f))
-                );
-
-                bool l_xCheck = l_currentCoord.x < 0 || l_currentCoord.x >= m_DungeonSize.x;
-                bool l_yCheck = l_currentCoord.y < 0 || l_currentCoord.y >= m_DungeonSize.y;
-                bool l_zCheck = l_currentCoord.z < 0 || l_currentCoord.z >= m_DungeonSize.z;
-
-                if (l_xCheck ||
-                    l_yCheck ||
-                    l_zCheck)
-                {
-                    //Debug.Log("Dungeon Generator: Object does not fit. Error coord: " + l_currentCoord);
-                    return false;
-                }
-
-                //Debug.Log("Voxel map check at: " + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2]);
-                if (_VoxelMap.Contains(l_currentCoord))
-                {
-                    //Debug.Log("Dungeon Generator: Object overlaps another. Error coord: " + l_currentCoord);
+                    Debug.Log("DunGen: Failed to fit " + l_dungenRoom.gameObject.name + ", overlaps with " + l_currentRoom.gameObject.name);
                     return false;
                 }
             }
 
-            //Debug.Log("Dungeon Generator: Object fits");
+            Debug.Log("DunGen: Successful fit");
             return true;
-        }
-
-        private void FillMap(ref GameObject _dungeonPart, ref List<Vector3> _VoxelMap)
-        {
-            DunGenRoom l_prefab = _dungeonPart.GetComponent<DunGenRoom>();
-
-            // Voxel position of prefabs center
-            Vector3 l_shapeCenter = new Vector3(
-                                       _dungeonPart.transform.position.x / m_VoxelSize.x,
-                                       _dungeonPart.transform.position.y / m_VoxelSize.y,
-                                       _dungeonPart.transform.position.z / m_VoxelSize.z
-                                       );
-            List<Vector3> l_prefabCoords = l_prefab.GetCoordinates(ref l_shapeCenter, ref m_VoxelSize);
-
-            Vector3 l_currentCoord;
-            for (int i = 0; i < l_prefabCoords.Count; i++)
-            {
-                l_currentCoord = new Vector3(
-                    (int)(l_prefabCoords[i].x + (m_DungeonSize.x * 0.5f)),
-                    (int)(l_prefabCoords[i].y + (m_DungeonSize.y * 0.5f)),
-                    (int)(l_prefabCoords[i].z + (m_DungeonSize.z * 0.5f))
-                );
-
-                _VoxelMap.Add(l_currentCoord);
-                //Debug.Log("Dungeon Generator: Position filled: (" + l_currentCoord[0] + ", " + l_currentCoord[1] + ", " + l_currentCoord[2] + ")");
-            }
-        }
-
-        private void PrintVoxelMap(ref bool[,,] _VoxelMap)
-        {
-            string message = "Dungeon Generator: Voxel Map Output:\n";
-
-            for (int y = 0; y < m_DungeonSize.y; y++)
-            {
-                message += "For y = " + y + ":\n";
-                for (int x = 0; x < m_DungeonSize.x; x++)
-                {
-                    for (int z = 0; z < m_DungeonSize.z; z++)
-                    {
-                        if (_VoxelMap[x, y, z])
-                        {
-                            message += "1  ";
-                        }
-                        else
-                        {
-                            message += "0 ";
-                        }
-                    }
-                    message += "\n";
-                }
-            }
-
-            Debug.Log(message);
-        }
-
-        /// <summary>
-        /// Determine the most optimal voxel size for the algorithm to save space when keeping the list of used voxels
-        /// </summary>
-        private Vector3 DetermineVoxelSize(ref GameObject _startingRoom)
-        {
-            // Steps:
-            // 1. Determine HCF of each dimension of the DungeonParts
-            // 2. Edit sizes of Dungeon & DungeonParts to compensate
-            string l_debugMessage = "RanaksDunGen: Determining optimal voxel size:";
-            Vector3 l_minValues = _startingRoom.GetComponent<DunGenRoom>().m_Size;
-            List<Vector3> l_partSizes = new List<Vector3>();
-
-            l_partSizes.Add(_startingRoom.GetComponent<DunGenRoom>().m_Size);
-
-            // Get minimum size values of each dimension
-            DunGenRoom l_prefabPart;
-            foreach (DunGenRoomContainer dcp in m_DungeonParts)
-            {
-                l_prefabPart = dcp.m_Prefab.GetComponent<DunGenRoom>();
-                l_partSizes.Add(l_prefabPart.m_Size);
-
-                if (l_minValues.x > l_prefabPart.m_Size.x)
-                {
-                    l_minValues.x = l_prefabPart.m_Size.x;
-                }
-
-                if (l_minValues.y > l_prefabPart.m_Size.y)
-                {
-                    l_minValues.y = l_prefabPart.m_Size.y;
-                }
-
-                if (l_minValues.z > l_prefabPart.m_Size.z)
-                {
-                    l_minValues.z = l_prefabPart.m_Size.z;
-                }
-            }
-
-            l_debugMessage += "\nMin Values: " + l_minValues;
-
-            Vector3 l_dimensionHCF = Vector3.one;
-            Vector3 l_currentFactor = Vector3.one;
-
-            // Determine HCF of each dimension
-            for (int i = 0; i < 3; i++)
-            {
-                while (l_currentFactor[i] <= l_minValues[i])
-                {
-                    bool l_failed = false;
-                    foreach (Vector3 l_currentSize in l_partSizes)
-                    {
-                        if (l_currentSize[i] % l_currentFactor[i] != 0)
-                        {
-                            l_failed = true;
-                            break;
-                        }
-                    }
-
-                    if (!l_failed)
-                    {
-                        l_dimensionHCF[i] = l_currentFactor[i];
-                    }
-
-                    l_currentFactor[i] += 1;
-                }
-            }
-
-            // X and Z have to be checked for the same value because rotating
-            while (l_currentFactor.x <= l_minValues.x && l_currentFactor.z <= l_minValues.x)
-            {
-                bool l_failed = false;
-                foreach (Vector3 l_currentSize in l_partSizes)
-                {
-                    if (l_currentSize.x % l_currentFactor.x != 0 || l_currentSize.z % l_currentFactor.x != 0)
-                    {
-                        l_failed = true;
-                        break;
-                    }
-                }
-
-                if (!l_failed)
-                {
-                    l_dimensionHCF.x = l_currentFactor.x;
-                }
-
-                l_currentFactor.x += 1;
-            }
-
-            l_dimensionHCF.z = l_dimensionHCF.x;
-
-            while (l_currentFactor.y <= l_minValues.y)
-            {
-                bool l_failed = false;
-                foreach (Vector3 l_currentSize in l_partSizes)
-                {
-                    if (l_currentSize.y % l_currentFactor.y != 0)
-                    {
-                        l_failed = true;
-                        break;
-                    }
-                }
-
-                if (!l_failed)
-                {
-                    l_dimensionHCF.y = l_currentFactor.y;
-                }
-
-                l_currentFactor.y += 1;
-            }
-
-            l_debugMessage += "\nOptimal voxel size: " + l_dimensionHCF;
-
-            // if (m_Debug)
-            // {
-            //Debug.Log(l_debugMessage);
-            // }
-
-            return l_dimensionHCF;
-        }
-
-        public Vector3 GetVoxelSize()
-        {
-            return m_VoxelSize;
         }
     }
 }
