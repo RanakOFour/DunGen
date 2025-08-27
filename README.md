@@ -4,22 +4,29 @@
 
 The DunGen (DUNgeon GENerator) is a tool that aims to take in a list of Unity prefabs and then connect them together like puzzle pieces to create random dungeon layouts for Unity games.
 
+## Installation
+To import the package into your project, open the Services/Explore tab, and press the '+' button. Select 'Add package from Git URL' and enter https://github.com/RanakOFour/DunGen.git
+<img width="792" height="238" alt="gitURL" src="https://github.com/user-attachments/assets/545f43d8-3be7-4945-9ae8-cf1cb4017c72" />
+
 ## How does it work?
 
-To make a dungeon, you will need 3 things:
-1. A gameobject with a DungeonGenerator script attached
+First, an empty GameObject needs to exist in your scene with a DunGenerator script attached (as pictured below)
+<img width="629" height="432" alt="Screenshot_2025-08-27_10 52 59" src="https://github.com/user-attachments/assets/9f475185-c478-4809-be06-7c524cccc908" />
 
-<img width="341" height="469" alt="DungeonManager" src="https://github.com/user-attachments/assets/afa8cad9-758c-4df4-9971-be3d7dbea5e9" />
+The Starting Room and Dungeon Parts sections will need to be populated by prefabs with the DunGenRoom script
+<img width="1920" height="647" alt="Screenshot_2025-08-27_11 13 36" src="https://github.com/user-attachments/assets/2ff03ab4-c97c-4c91-97e6-a622edccfd2a" />
+The 'Bounds' property describes a box shape that should cover the whole of the prefab. The 'center' of the Bounds is it's location on the prefab, and it's 'extents' are the half sizes of each length of the box. A visualisation of the Bounds is drawn on the prefab as a red outline.
 
-2. A set of prefabs (to build the dungeon with) that have a DungeonPart script attached (Squared in red)
-3. The prefabs need to have ConnectionPoints placed within them that are facing outside of the prefab (Squared in pink)
+Each prefab also needs ConnectionPoints to be assigned.
+<img width="1920" height="649" alt="Screenshot_2025-08-27_11 19 30" src="https://github.com/user-attachments/assets/00158c57-0421-4713-ae1a-eac46c2c069a" />
+ConnectionPoints should be located where you want the prefab to connect to others i.e. at a door. The ConnectionPoints should also be on the edges of the bounds, and rotated so they face outwards from the prefab. The Bounds in this example do not cover the whole prefab and only extend halfway through the doorframe, as such, the ConnectionPoints are also placed halfway in the doorframe.
 
-### Example DungeonPart Prefab
-<img width="1920" height="1080" alt="DungeonPart" src="https://github.com/user-attachments/assets/8fcbf898-4280-4b98-9b33-f90b502a4f02" />
+To check that a ConnectionPoint is facing outwards, make sure that the tool handle rotation is set to 'local', and that the red arrow points away from the prefab
+<img width="172" height="77" alt="ToolRotation" src="https://github.com/user-attachments/assets/658ef5ca-9ed6-43a6-9334-5663ab1566ef" />
 
-### ConnectionPoint facing outwards
-Local view ↓ enabled will show the red arrow facing outwards
-![When checking the 'local' view, the red arrow faces away from the prefab](https://github.com/RanakOFour/Unity3DDungeonGenerator/blob/main/READMeAssets/ConnectionPoint.png)
-The ConnectionPoint prefabs are only green planes so they can be seen when editing, they are hidden after the dungeon is generated.
+As another example, here is a T-Junction prefab with a ConnectionPoint selected in the editor<img width="711" height="563" alt="Screenshot_2025-08-27_11 29 35" src="https://github.com/user-attachments/assets/ca26c904-5b88-48dd-a78e-494b878141a6" />
 
-With all of this setup, you just need to call the Generate() function from the DungeonGenerator and it should all be fine.
+With the prefabs set up, they can be drag and dropped into the DunGenerator from before. When populating the Dungeon Parts list, it is important to specify how many of each part you want to be placed into the Dungeon.
+<img width="723" height="391" alt="Screenshot_2025-08-27_11 32 26" src="https://github.com/user-attachments/assets/6352fdc0-3043-4427-a4aa-c928137ad602" />
+
+With that, all the prep is done and now you just need something to call the Generate() function in the DunGenerator
